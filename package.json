@@ -1,0 +1,33 @@
+{
+  "name": "@ricardianfabric/react-components",
+  "version": "0.0.1",
+  "description": "A ricardian contract component that works with contracts deployed from Ricardian Fabric.",
+  "scripts": {
+    "ts-types": "tsc --emitDeclarationOnly --outDir dist",
+    "build": "rimraf dist && node ./esbuild.mjs && npm run ts-types"
+  },
+  "keywords": [],
+  "author": "Peter Horvath",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^18.0.21",
+    "esbuild": "^0.15.9",
+    "esbuild-node-externals": "^1.5.0",
+    "react": "^18.2.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "static-kdtree": "^1.0.2",
+    "web3": "^1.8.0"
+  }
+}
