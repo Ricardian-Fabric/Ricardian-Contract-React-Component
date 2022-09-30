@@ -1,6 +1,6 @@
 {
   "name": "@ricardianfabric/react-components",
-  "version": "0.0.1",
+  "version": "0.0.1+1",
   "description": "A ricardian contract component that works with contracts deployed from Ricardian Fabric.",
   "scripts": {
     "ts-types": "tsc --emitDeclarationOnly --outDir dist",
