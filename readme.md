@@ -1,6 +1,12 @@
 # Ricardian Contract React Component
 
-This is react dependency used for rendering ricardian contracts inside react application. The Ricardian contract exposes the following interface:
+This is react dependency used for rendering ricardian contracts inside react application. 
+
+The dependency allows you to use any component framework and render the ricardian contract directly into your application1
+
+You can find the example here: https://github.com/Ricardian-Fabric/Ricardian-Contract-React-Component-EXAMPLE
+
+The Ricardian contract exposes the following interface:
 
         <RicardianContract
             LoadingIndicator={<ProgressIndicator />}
