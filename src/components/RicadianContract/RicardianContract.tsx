@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import { getLocation, isBlocked } from '../../geocoding';
 import { getRecomputedHash } from '../../utils';
-import { acceptAgreement, canAccept, requestAccounts } from '../../web3';
+import { acceptAgreement, canAccept, getAccount } from '../../web3';
+import { provider } from 'web3-core';
 
 
 /*
@@ -18,14 +19,20 @@ import { acceptAgreement, canAccept, requestAccounts } from '../../web3';
 
 export interface RicardianContractProps {
     arweaveTx: string,
-    provider: string,
+    provider: provider,
     LoadingIndicator: React.ReactNode,
     useReverseGeocoding: boolean,
     AcceptButton: React.ReactNode,
-    signingSuccessCallback: CallableFunction,
+    signingSuccessCallback: SigningSuccessCallback,
     signingErrorCallback: SigningErrorCallback,
 
 }
+
+/*
+  @Dev: The funciton is called when a contract has been successfully signed or if it was accepted already
+*/
+
+export type SigningSuccessCallback = () => void;
 
 /*
   @Dev: This function is called when an error occurs.
@@ -110,59 +117,57 @@ const RicardianContract = ({ arweaveTx, provider, LoadingIndicator, useReverseGe
     const [status, setStatus] = useState(FetchStatus.loading);
 
     async function clickAccept() {
+        const contractProps = contractProperties as ContractProperties;
+
         if (useReverseGeocoding) {
-            const [myPosition, errOccured, errMsg] = getLocation();
+            const [myPosition, errOccured, errMsg] = await getLocation();
             if (errOccured) {
                 signingErrorCallback(errMsg);
             }
-
-            const contractProps = contractProperties as ContractProperties;
-
             const blocked = await isBlocked(myPosition as GeolocationPosition, contractProps.blockedCountries as BlockCountry[])
 
             if (blocked) {
                 signingErrorCallback("Unavailable");
             }
+        }
 
-            if (contractProps.network !== "arweave") {
-                const web3 = new Web3(provider);
-                const account = await requestAccounts(web3);
+        if (contractProps.network !== "arweave") {
+            const web3 = new Web3(provider);
 
-                if (contractProps.blockedAddresses?.includes(account)) {
-                    signingErrorCallback("Blocked");
-                    return;
-                }
+            const account = await getAccount(web3);
 
-
-                const acceptable = await canAccept(web3, contractProps.smartcontract as string, account, signingErrorCallback)
-
-                if (!acceptable) {
-                    //You have already accepted this contract
-                    signingSuccessCallback();
-                    return;
-                }
-
-                const hash = await getRecomputedHash(contractProps, contractSemantics);
-
-                const onError = (error: any, receipt: any) => {
-                    signingErrorCallback(error.message);
-                }
-                const onReceipt = async (receipt: any) => {
-                    signingSuccessCallback();
-                }
-
-                await acceptAgreement(web3,
-                    signingErrorCallback,
-                    {
-                        hash: hash as string,
-                        signerAddress: account,
-                        contractAddress: contractProps.smartcontract as string,
-                        onError,
-                        onReceipt
-                    })
-
+            if (contractProps.blockedAddresses?.includes(account)) {
+                signingErrorCallback("Blocked");
+                return;
             }
 
+
+            const acceptable = await canAccept(web3, contractProps.smartcontract as string, account, signingErrorCallback)
+
+            if (!acceptable) {
+                //You have already accepted this contract
+                signingSuccessCallback();
+                return;
+            }
+
+            const hash = await getRecomputedHash(contractProps, contractSemantics);
+
+            const onError = (error: any, receipt: any) => {
+                signingErrorCallback(error.message);
+            }
+            const onReceipt = async (receipt: any) => {
+                signingSuccessCallback();
+            }
+
+            await acceptAgreement(web3,
+                signingErrorCallback,
+                {
+                    hash: hash as string,
+                    signerAddress: account,
+                    contractAddress: contractProps.smartcontract as string,
+                    onError,
+                    onReceipt
+                })
 
         }
 
@@ -179,7 +184,10 @@ const RicardianContract = ({ arweaveTx, provider, LoadingIndicator, useReverseGe
                 setContractProperties(properties);
                 setContractSemantics(semantics);
                 setStatus(FetchStatus.success)
-            }).catch(err => { setStatus(FetchStatus.error) })
+            }).catch(err => {
+                setStatus(FetchStatus.error)
+                signingErrorCallback(err.message)
+            })
     }, [])
 
     if (status === FetchStatus.loading) {
@@ -192,7 +200,6 @@ const RicardianContract = ({ arweaveTx, provider, LoadingIndicator, useReverseGe
     } else if (status === FetchStatus.error) {
         return <h1>An Error Occured!</h1>
     } else {
-
         return (<div>
             <div dangerouslySetInnerHTML={{ __html: contractSemantics }}></div>
             <div style={{ display: "flex", justifyContent: "center" }} >
