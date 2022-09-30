@@ -17,7 +17,6 @@ export type HashData = {
 
 
 export async function getRecomputedHash(props: ContractProperties, semantics: string) {
-
     const createdDate = props.created as string;
     const expires = props.expires as string;
     const redirectto = props.redirectto as string;
@@ -41,7 +40,6 @@ export async function getRecomputedHash(props: ContractProperties, semantics: st
         blockedAddresses,
         ERC20,
     });
-
     return recomputedHash;
 }
 
@@ -81,4 +79,14 @@ function concatStrings(data: Array<String>) {
         res += d;
     });
     return res;
+}
+
+export function didExpire(expires: string): boolean {
+    if (expires === "NEVER") {
+        return false;
+    } else {
+        const now = new Date().getTime();
+        const expiryDate = new Date(expires).getTime();
+        return now > expiryDate;
+    }
 }
