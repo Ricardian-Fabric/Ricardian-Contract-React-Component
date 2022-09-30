@@ -102,3 +102,8 @@ b) npm link react-dom
 3)Stop your dev-server and do `npm start` again.
 
 This Error Does not appear when importing the dependency from NPM.
+
+
+# Bug Reports
+
+Please open an issue if you find any problems with this dependency so it can be resolved ASAP. Thank!
