@@ -1,7 +1,7 @@
 import Web3 from "web3";
 
 
-export async function requestAccounts(web3: Web3) {
+export async function getAccount(web3: Web3) {
     const accounts = await web3.eth.getAccounts();
     return accounts[0];
 }
