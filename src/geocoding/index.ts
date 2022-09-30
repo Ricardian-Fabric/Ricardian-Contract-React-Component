@@ -3,28 +3,30 @@ import { fetchGeoCodingCSV } from "./fetch";
 import { createRevGeocoder } from "./geocoder";
 import { GeoRecord } from "./types";
 
-export function getLocation(): [GeolocationPosition | undefined, boolean, string] {
-    let myPosition;
-    let errOccured = false;
-    let errMsg = "";
+export async function getLocation(): Promise<[GeolocationPosition | undefined, boolean, string]> {
     if ("geolocation" in navigator) {
+        try {
+            const position = await getCurrentPosition();
+            return [position, false, ""]
+        } catch (err: any) {
+            return [undefined, true, err.message]
+        }
+    } else {
+        return [undefined, true, "Geolocation is unavailable."]
+    }
+}
+
+async function getCurrentPosition(): Promise<GeolocationPosition> {
+    return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
             async function (position) {
-                setTimeout(() => {
-                    myPosition = position;
-                })
+                resolve(position);
             },
             function (err) {
-                errOccured = true;
-                errMsg = err.message;
+                reject(err);
             }
         )
-    } else {
-        errOccured = true;
-        errMsg = "Geolocation is unavailable."
-    }
-
-    return [myPosition, errOccured, errMsg]
+    })
 }
 
 export async function isBlocked(position: GeolocationPosition, blockedCountries: BlockCountry[]) {
