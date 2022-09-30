@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "author": "Peter Horvath",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/react": "^18.0.21",
     "esbuild": "^0.15.9",
