@@ -6,7 +6,17 @@
     "ts-types": "tsc --emitDeclarationOnly --outDir dist",
     "build": "rimraf dist && node ./esbuild.mjs && npm run ts-types"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ricardian-Fabric/Ricardian-Contract-React-Component.git"
+  },
+  "keywords": [
+    "smart contract",
+    "ricardian contract",
+    "legal contract",
+    "web3",
+    "arweave"
+  ],
   "author": "Peter Horvath",
   "license": "MIT",
   "devDependencies": {
