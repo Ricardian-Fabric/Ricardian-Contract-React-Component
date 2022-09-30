@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import { getLocation, isBlocked } from '../../geocoding';
-import { getRecomputedHash } from '../../utils';
+import { didExpire, getRecomputedHash } from '../../utils';
 import { acceptAgreement, canAccept, getAccount } from '../../web3';
 import { provider } from 'web3-core';
 
@@ -85,12 +85,8 @@ function parseContract(html: string): [string, ContractProperties] {
     }
 
     const display: Element = doc.getElementById("contract-display") as Element;
-    const serializer = new XMLSerializer();
-    let display_innerHTML = "";
-    for (let i = 0; i < display.childNodes.length; i++) {
-        const node = display.childNodes[i];
-        display_innerHTML += serializer.serializeToString(node);
-    }
+
+    let display_innerHTML = display.innerHTML;
 
     return [display_innerHTML, {
         contracttype: page.getAttribute("data-contracttype"),
@@ -102,7 +98,7 @@ function parseContract(html: string): [string, ContractProperties] {
         issuer: page.getAttribute("data-issuer"),
         issuersignature: page.getAttribute("data-issuersignature"),
         smartcontract: page.getAttribute("data-smartcontract"),
-        erc20: page.getAttribute("data-erc20"),
+        erc20: page.getAttribute("data-erc20") === `""` ? "" : JSON.parse(page.getAttribute("data-erc20") as string),
         blockedAddresses: JSON.parse(page.getAttribute("data-blockedaddresses") as string),
         blockedCountries: JSON.parse(page.getAttribute("data-blockedcountries") as string),
         relatedtrail: page.getAttribute("data-relatedtrail"),
@@ -128,7 +124,13 @@ const RicardianContract = ({ arweaveTx, provider, LoadingIndicator, useReverseGe
 
             if (blocked) {
                 signingErrorCallback("Unavailable");
+                return;
             }
+        }
+        const expired = didExpire(contractProps.expires as string);
+        if (expired) {
+            signingErrorCallback("Expired!")
+            return;
         }
 
         if (contractProps.network !== "arweave") {
